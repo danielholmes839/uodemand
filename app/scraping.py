@@ -1,18 +1,17 @@
-from typing import List
 import requests
+import pytz
 import xml.etree.ElementTree as ET
+from typing import List
 from datetime import datetime, timedelta, timezone
 from bs4 import BeautifulSoup
 
+SESSION_ENDPOINT = "https://geegeereg.uottawa.ca/geegeereg/Activities/ActivitiesDetails.asp?aid=316"
+
 
 def request_cookies():
-    SESSION_ENDPOINT = "https://geegeereg.uottawa.ca/geegeereg/Activities/ActivitiesDetails.asp?aid=316"
     session = requests.Session()
     session.get(SESSION_ENDPOINT)
     return session.cookies.get_dict()
-
-
-COOKIES = request_cookies()
 
 
 def parse_date(date_info):
@@ -33,23 +32,24 @@ def parse_time(time_info):
 
 
 def datetime_and_duration(year, month, day, start, end):
+    est = pytz.timezone('Canada/Eastern')
     start_time = datetime.strptime(
-        f'{year}-{month}-{day} {start}', '%Y-%b-%d %I:%M%p').replace(tzinfo=timezone(offset=timedelta(hours=-4)))
+        f'{year}-{month}-{day} {start}', '%Y-%b-%d %I:%M%p')
 
     end_time = datetime.strptime(
-        f'{year}-{month}-{day} {end}', '%Y-%b-%d %I:%M%p').replace(tzinfo=timezone(offset=timedelta(hours=-4)))
+        f'{year}-{month}-{day} {end}', '%Y-%b-%d %I:%M%p')
 
     duration = int((end_time - start_time).total_seconds()/60)
 
-    return start_time, duration
+    return est.localize(start_time), duration
 
 
-def scrape_page(page: int) -> List[dict]:
+def scrape_page(page: int, cookies) -> List[dict]:
     response = requests.get(
         f'https://geegeereg.uottawa.ca/geegeereg/Activities/ActivitiesDetails.asp?GetPagingData=true&aid=316&sEcho=6&iColumns=9&sColumns=&iDisplayStart={page*10}&iDisplayLength=10&ajax=true',
-        cookies=COOKIES,
+        cookies=cookies,
     )
-    timestamp = datetime.now().timestamp()
+    timestamp = datetime.utcnow().replace(tzinfo=pytz.utc, second=0, microsecond=0).isoformat()
     tree = ET.fromstring(response.text)
 
     html = tree.findtext('data')
@@ -95,16 +95,27 @@ def scrape_page(page: int) -> List[dict]:
 
 def scrape() -> List[dict]:
     data = []
+    cookies = request_cookies()
+
     for i in range(20):
-        sessions = scrape_page(i)
+        try:
+            sessions = scrape_page(i, cookies)
+        except Exception as e:
+            print(f'ERROR "scrape": {e}')
+            break
 
         if len(sessions) == 0:
             break
 
         data.extend(sessions)
 
-    return sessions
+    print(data[0])
+
+    for dt in [data[0]['time'], data[0]['timestamp']]:
+        print(f'iso: {dt}, dt from iso: {datetime.fromisoformat(dt)}, dt from iso and back: {datetime.fromisoformat(dt).isoformat()}')
+
+    return data
 
 
 if __name__ == '__main__':
-    scrape()
+    print(len(scrape()))
