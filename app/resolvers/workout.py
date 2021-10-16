@@ -6,37 +6,37 @@ workout = ObjectTypeWithContext('Workout')
 
 
 @workout.field('id')
-def resolve_id(parent: Workout, _: Context):
+def resolve_id(parent: Workout, _):
     return parent.id
 
 
 @workout.field('barcode')
-def resolve_barcode(parent: Workout, _: Context):
+def resolve_barcode(parent: Workout, _):
     return parent.barcode
 
 
 @workout.field('title')
-def resolve_title(parent: Workout, _: Context):
+def resolve_title(parent: Workout, _):
     return parent.title
 
 
 @workout.field('location')
-def resolve_location(parent: Workout, _: Context):
+def resolve_location(parent: Workout, _):
     return parent.location
 
 
 @workout.field('available')
-def resolve_available(parent: Workout, _: Context):
+def resolve_available(parent: Workout, _):
     return parent.available
 
 
 @workout.field('time')
-def resolve_time(parent: Workout, _: Context):
+def resolve_time(parent: Workout, _):
     return parent.time
 
 
 @workout.field('timestamp')
-def resolve_timestamp(parent: Workout, _: Context):
+def resolve_timestamp(parent: Workout, _):
     return parent.timestamp
 
 

@@ -16,15 +16,14 @@ type Workout {
 # Workouts with the same barcode
 type WorkoutGroup {
     workouts: [Workout!]!
-    count: Int!
-    firstTimestamp: ISO8601!
-    lastTimestamp: ISO8601!
+    first: Workout!
+    last: Workout!
 }
 
 type Query {
-    workouts(first: Int!, after: CURSOR): WorkoutConnection!
+    workouts(first: Int, after: CURSOR, last: Int, before: CURSOR): WorkoutConnection
     workout(id: ID!): Workout
-    workoutGroup(barcode: String!): WorkoutGroup
+    workoutGroup(barcode: Int!): WorkoutGroup
 }
 
 type PageInfo {
