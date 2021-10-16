@@ -2,14 +2,14 @@ from sqlalchemy.orm import sessionmaker
 from contextlib import contextmanager
 from .engine import engine
 
-Session = sessionmaker()
-Session.configure(bind=engine)
+SessionMaker = sessionmaker()
+SessionMaker.configure(bind=engine)
 
 
-# db: Session = Depends(db_provider)
+# db: Session = Depends(db_provider) FastAPI dependency injection
 def db_provider():
     try:
-        session = Session()
+        session = SessionMaker()
         yield session
     finally:
         session.close()
@@ -18,7 +18,7 @@ def db_provider():
 @contextmanager
 def db_context():
     try:
-        session = Session()
+        session = SessionMaker()
         yield session
     finally:
         session.close()

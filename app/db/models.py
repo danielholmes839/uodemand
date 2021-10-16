@@ -10,22 +10,23 @@ class Workout(Base):
     """ Workout session model """
     __tablename__ = 'workout'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    barcode = Column(Integer, nullable=False)
+    id = Column(Integer, primary_key=True, autoincrement=True)  # Identifier for this data point
+    barcode = Column(Integer, nullable=False)                   # Identifier for the workout session
+
     title = Column(String, nullable=False)
     location = Column(String, nullable=False)
 
-    # The start time of the workout session
+    # When the workout was collected
+    timestamp = Column(TIMESTAMP(timezone=True), nullable=False, default=datetime.utcnow())
+
+    # When the workout session starts
     time = Column(TIMESTAMP(timezone=True), nullable=False)
 
     # The duration of the workout session
     duration = Column(Integer, nullable=False)
 
-    # The number of spaces still available in the workout session
+    # The number of spaces currently available
     available = Column(Integer, nullable=False)
-
-    # When the data point was collected
-    timestamp = Column(TIMESTAMP(timezone=True), nullable=False)
 
     @staticmethod
     def from_dict(data: dict):
