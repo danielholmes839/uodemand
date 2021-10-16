@@ -1,8 +1,8 @@
 import requests
 import pytz
-import xml.etree.ElementTree as ET
+from xml.etree import ElementTree
 from typing import List
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from bs4 import BeautifulSoup
 
 SESSION_ENDPOINT = "https://geegeereg.uottawa.ca/geegeereg/Activities/ActivitiesDetails.asp?aid=316"
@@ -44,14 +44,14 @@ def datetime_and_duration(year, month, day, start, end):
     return est.localize(start_time), duration
 
 
-def scrape_page(page: int, cookies) -> List[dict]:
+def scrape_page(page: int, cookies: dict, timestamp: str) -> List[dict]:
     response = requests.get(
         f'https://geegeereg.uottawa.ca/geegeereg/Activities/ActivitiesDetails.asp?GetPagingData=true&aid=316&sEcho=6&iColumns=9&sColumns=&iDisplayStart={page*10}&iDisplayLength=10&ajax=true',
         cookies=cookies,
     )
-    timestamp = datetime.utcnow().replace(tzinfo=pytz.utc, second=0, microsecond=0).isoformat()
-    tree = ET.fromstring(response.text)
 
+    # Find HTML in the XML response
+    tree = ElementTree.fromstring(response.text)
     html = tree.findtext('data')
     soup = BeautifulSoup(html, 'html.parser')
 
@@ -63,16 +63,16 @@ def scrape_page(page: int, cookies) -> List[dict]:
         available = int(session.find("td", {'headers': 'Available'}).text)
         title = str(session.find("td", {'headers': 'Course'}).find('div').text)
         location = str(session.find(
-            "td", {'headers': 'Complex'}).find('a').text).strip(" \n")
+            'td', {'headers': 'Complex'}).find('a').text).strip(" \n")
 
         # Date / time information
         date_info = str(session.find(
-            "td", {'headers': 'Dates'}).text).split('-')
+            'td', {'headers': 'Dates'}).text).split('-')
 
         year, month, day = parse_date(date_info)
 
         time_info = str(session.find(
-            "td", {'headers': 'Times'}).text).split('-')
+            'td', {'headers': 'Times'}).text).split('-')
 
         start, end = parse_time(time_info)
 
@@ -93,13 +93,16 @@ def scrape_page(page: int, cookies) -> List[dict]:
     return session_data
 
 
-def scrape() -> List[dict]:
+def scrape() -> (List[dict], str):
+    """ Returns workout dictionaries, and the iso format timestamp string """
     data = []
+
     cookies = request_cookies()
+    timestamp = datetime.utcnow().replace(microsecond=0).isoformat()
 
     for i in range(20):
         try:
-            sessions = scrape_page(i, cookies)
+            sessions = scrape_page(i, cookies, timestamp)
         except Exception as e:
             print(f'ERROR "scrape": {e}')
             break
@@ -109,13 +112,4 @@ def scrape() -> List[dict]:
 
         data.extend(sessions)
 
-    print(data[0])
-
-    for dt in [data[0]['time'], data[0]['timestamp']]:
-        print(f'iso: {dt}, dt from iso: {datetime.fromisoformat(dt)}, dt from iso and back: {datetime.fromisoformat(dt).isoformat()}')
-
-    return data
-
-
-if __name__ == '__main__':
-    print(len(scrape()))
+    return data, timestamp
