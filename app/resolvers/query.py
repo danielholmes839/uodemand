@@ -44,6 +44,5 @@ def resolve_group(_, ctx: Context, barcode: int):
         .filter(Workout.barcode == barcode) \
         .order_by(asc(Workout.timestamp)).all()
 
-    print(workouts)
     if len(workouts) > 0:
         return workouts

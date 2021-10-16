@@ -20,7 +20,7 @@ class WorkoutPage:
         return self.limit + 1 == len(self.workouts)
 
 
-def paginate_workouts_forward(ctx: Context, first: int, after: Cursor = None) -> WorkoutPage:
+def paginate_workouts_forward(ctx: Context, first: int, after: Cursor = None):
     first = min(MAX_PAGE_SIZE, first)
 
     if after is None:
@@ -30,6 +30,9 @@ def paginate_workouts_forward(ctx: Context, first: int, after: Cursor = None) ->
     workouts = ctx.db.query(Workout)\
         .filter(Workout.time > after.time, Workout.timestamp <= after.timestamp)\
         .order_by(desc(Workout.timestamp), asc(Workout.time)).limit(first + 1).all()
+
+    if len(workouts) == 0:
+        return None
 
     return WorkoutPage(workouts, first)
 
@@ -45,12 +48,13 @@ def paginate_workouts_backward(ctx: Context, last: int, before: Cursor = None):
         .filter(Workout.time < before.time, Workout.timestamp <= before.timestamp) \
         .order_by(desc(Workout.timestamp), desc(Workout.time)).limit(last + 1).all()
 
+    if len(workouts) == 0:
+        return None
+
     return WorkoutPage(workouts, last)
 
 
 page_info = ObjectType('PageInfo')
-connection = ObjectType('WorkoutConnection')
-edge = ObjectType('WorkoutEdge')
 
 
 @page_info.field('hasPreviousPage')
@@ -80,6 +84,9 @@ def resolve_has_next_page(parent: WorkoutPage, _):
     return Cursor.now()
 
 
+connection = ObjectType('WorkoutConnection')
+
+
 @connection.field('pageInfo')
 def resolve_page_info(parent: WorkoutPage, _):
     return parent
@@ -88,6 +95,9 @@ def resolve_page_info(parent: WorkoutPage, _):
 @connection.field('edges')
 def resolve_edges(parent: WorkoutPage, _):
     return parent.edges()
+
+
+edge = ObjectType('WorkoutEdge')
 
 
 @edge.field('cursor')

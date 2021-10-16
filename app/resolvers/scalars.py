@@ -42,7 +42,7 @@ class Cursor:
     def deserialize(serialized: str):
         dt = b64decode(serialized).decode().split(',')
         time = datetime.fromisoformat(dt[0])
-        timestamp = datetime.fromisoformat(dt[0])
+        timestamp = datetime.fromisoformat(dt[1])
 
         return Cursor(time, timestamp)
 

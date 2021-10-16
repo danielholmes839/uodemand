@@ -43,3 +43,9 @@ def resolve_timestamp(parent: Workout, _):
 @workout.field('group')
 def resolve_group(parent: Workout, ctx: Context):
     return ctx.db.query(Workout).filter(Workout.barcode == parent.barcode).all()
+
+
+@workout.field('count')
+def resolve_count(parent: Workout, ctx: Context):
+    # TODO dataloader this maybe
+    return ctx.db.query(Workout).filter(Workout.barcode == parent.barcode).count()

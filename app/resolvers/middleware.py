@@ -2,9 +2,9 @@ from ariadne import ObjectType
 from ariadne.types import Extension
 from functools import wraps
 from starlette.requests import Request
-from sqlalchemy.orm import Session as SQLAlchemySession
+from sqlalchemy.orm import Session
 
-from app.db import Session
+from app.db import SessionMaker
 
 
 class ContextMiddleware(Extension):
@@ -20,32 +20,18 @@ class ContextMiddleware(Extension):
 
 class Context:
     def __init__(self, request: Request):
-        self.db: SQLAlchemySession = Session()
+        self.db: Session = SessionMaker()
         self.request = request
-
-        # Authentication
-        # token = request.headers.get('token')
-        # user_id, authenticated, message = Auth.read_token(token)
-        #
-        # self.token = token
-        # self.user_id = user_id
-        # self.authenticated = authenticated
-        # self.authentication_message = message
-        # self.authentication_token = token
-        #
-        # # Data Loaders
-        # self.loaders = DataLoaders(self.session, user_id)
 
     def close(self):
         self.db.close()
 
 
-def resolver_update_arguments(resolver, update):
-    """ Update the name of arguments passed to a resolver
-    ex: update={'input': 'image_input'}
-    to avoid using pythons builtin input function
+def resolver_rename_arguments(resolver, update):
+    """ Rename arguments passed to a resolver
+    if the schema used 'input' as an argument it could renamed by passing:
+    {'input': 'new name'}
     """
-
     @wraps(resolver)
     def wrapper(*args, **kwargs):
         for old_key, new_key in update.items():
@@ -68,9 +54,9 @@ def resolver_add_context(resolver):
 
 
 def resolver_decorator(resolver_function, rename: dict = None):
-    """ Add a context instance, and update argument names """
+    """ Add a context instance, and rename argument names """
     if rename is not None:
-        resolver_function = resolver_update_arguments(resolver_function, rename)
+        resolver_function = resolver_rename_arguments(resolver_function, rename)
 
     resolver_function = resolver_add_context(resolver_function)
 
@@ -78,7 +64,7 @@ def resolver_decorator(resolver_function, rename: dict = None):
 
 
 class ObjectTypeWithContext:
-    """ Extends Ariadnes ObjectType to add a Context instance,
+    """ Extends Ariadne's ObjectType to add a Context instance,
     and update argument names when necessary """
 
     def __init__(self, name: str):
