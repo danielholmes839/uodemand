@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, String, Integer, DateTime, TIMESTAMP
+from sqlalchemy import Column, String, Integer, TIMESTAMP
 from sqlalchemy.ext.declarative import declarative_base
 from .engine import engine
 
