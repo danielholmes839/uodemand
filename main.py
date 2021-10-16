@@ -1,7 +1,10 @@
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_utils import tasks
 from app.db import Workout, db_context
+from app.settings import settings
+from app.s3 import backup
 from app.resolvers import graphql_endpoint
 from app.scraping import scrape
 
@@ -26,10 +29,17 @@ app.add_route('/api/graphql', graphql_endpoint)
 @tasks.repeat_every(seconds=60*20)
 async def scrape_task():
     """ Scrape the uOttawa website every 20 minutes """
-    workouts = scrape()
+    workouts, timestamp = scrape()
+
+    if settings.aws_backups_enabled:
+        backup(workouts, timestamp)
 
     with db_context() as db:
         for workout in workouts:
             db.add(Workout.from_dict(workout))
 
         db.commit()
+
+
+if __name__ == '__main__':
+    uvicorn.run(app, host='0.0.0.0', port=8000)
