@@ -10,7 +10,7 @@ from app.scraping import scrape
 app = FastAPI()
 
 origins = [
-    # 'http://localhost:3000', # TODO: uncomment when working on UI
+    'http://localhost:3000'
 ]
 
 app.add_middleware(
@@ -24,7 +24,7 @@ app.add_middleware(
 app.add_route('/api/graphql', graphql_endpoint)
 
 
-@app.on_event('startup')
+# @app.on_event('startup')
 @tasks.repeat_every(seconds=60*20)
 async def scrape_task():
     """ Scrape the uOttawa website every 20 minutes """

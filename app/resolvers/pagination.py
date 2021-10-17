@@ -1,23 +1,29 @@
 from ariadne import ObjectType
-from sqlalchemy import asc, desc
+from sqlalchemy import desc
 from typing import List
 from app.db import Workout
+from app.db.engine import engine
 from .middleware import Context
 from .scalars import Cursor
+from datetime import datetime
 
 MAX_PAGE_SIZE = 20
 
 
 class WorkoutPage:
     def __init__(self, workouts: List[Workout], limit: int):
-        self.workouts = workouts
+        self.count = len(workouts)
+        self.edges = workouts[:limit]
         self.limit = limit
 
-    def edges(self):
-        return self.workouts[:self.limit]
+    def start_cursor(self):
+        return Cursor.from_workout(self.edges[0])
+
+    def end_cursor(self):
+        return Cursor.from_workout(self.edges[-1])
 
     def has_next_page(self):
-        return self.limit + 1 == len(self.workouts)
+        return self.limit + 1 == self.count
 
 
 def paginate_workouts_forward(ctx: Context, first: int, after: Cursor = None):
@@ -26,10 +32,18 @@ def paginate_workouts_forward(ctx: Context, first: int, after: Cursor = None):
     if after is None:
         after = Cursor.now()
 
-    # Query an extra workout that won't be shown to the user. It will be used for hasNextPage
-    workouts = ctx.db.query(Workout)\
-        .filter(Workout.time > after.time, Workout.timestamp <= after.timestamp)\
-        .order_by(desc(Workout.timestamp), asc(Workout.time)).limit(first + 1).all()
+    params = {'dt': after.time, 'limit': first + 1}
+    statement = """
+        SELECT * FROM (
+            SELECT DISTINCT ON (barcode) *
+            FROM workout
+            WHERE time > :dt 
+            ORDER BY barcode, timestamp DESC
+        ) t ORDER BY "time" ASC LIMIT :limit
+    """
+
+    rows = ctx.db.execute(statement, params)
+    workouts = [Workout.from_tuple(row) for row in rows]
 
     if len(workouts) == 0:
         return None
@@ -58,28 +72,29 @@ page_info = ObjectType('PageInfo')
 
 
 @page_info.field('hasPreviousPage')
-def resolve_has_previous_page(parent: WorkoutPage, _):
+def resolve_has_previous_page(_, __):
     # TODO but most likely not necessary there will be plenty of data
     return True
 
 
 @page_info.field('hasNextPage')
 def resolve_has_next_page(parent: WorkoutPage, _):
+    print(parent.has_next_page())
     return parent.has_next_page()
 
 
 @page_info.field('startCursor')
-def resolve_has_next_page(parent: WorkoutPage, _):
-    if len(parent.workouts) > 0:
-        return Cursor.from_workout(parent.workouts[0])
+def resolve_start_cursor(parent: WorkoutPage, _):
+    if len(parent.edges) > 0:
+        return parent.start_cursor()
 
     return Cursor.now()
 
 
 @page_info.field('endCursor')
 def resolve_has_next_page(parent: WorkoutPage, _):
-    if len(parent.workouts) > 0:
-        return Cursor.from_workout(parent.workouts[-1])
+    if len(parent.edges) > 0:
+        return parent.end_cursor()
 
     return Cursor.now()
 
@@ -94,7 +109,7 @@ def resolve_page_info(parent: WorkoutPage, _):
 
 @connection.field('edges')
 def resolve_edges(parent: WorkoutPage, _):
-    return parent.edges()
+    return parent.edges
 
 
 edge = ObjectType('WorkoutEdge')

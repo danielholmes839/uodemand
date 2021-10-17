@@ -41,6 +41,19 @@ class Workout(Base):
             timestamp=datetime.fromisoformat(data['timestamp'])
         )
 
+    @staticmethod
+    def from_tuple(data: tuple):
+        return Workout(
+            id=data[0],
+            barcode=data[1],
+            title=data[2],
+            location=data[3],
+            time=data[4],
+            duration=data[5],
+            available=data[6],
+            timestamp=data[7]
+        )
+
     def to_dict(self) -> dict:
         """ Create dict from a workout record """
         return {
