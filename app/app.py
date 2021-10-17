@@ -21,14 +21,20 @@ app.add_middleware(
     allow_headers=['*'],
 )
 
+# GraphQL endpoint
 app.add_route('/api/graphql', graphql_endpoint)
 
 
-# @app.on_event('startup')
+@app.on_event('startup')
 @tasks.repeat_every(seconds=60*20)
 async def scrape_task():
     """ Scrape the uOttawa website every 20 minutes """
     workouts, timestamp = scrape()
+    print('Scraping uOttawa...')
+    print(f'Scraped {len(workouts)} records')
+
+    if len(workouts) == 0:
+        return
 
     if settings.aws_backups_enabled:
         backup(workouts, timestamp)
@@ -38,3 +44,5 @@ async def scrape_task():
             db.add(Workout.from_dict(workout))
 
         db.commit()
+
+    print('Successfully uploaded records')
