@@ -32,6 +32,7 @@ def paginate_workouts_forward(ctx: Context, first: int, after: Cursor = None):
     if after is None:
         after = Cursor.now()
 
+    # Query one extra workout
     params = {'dt': after.time, 'limit': first + 1}
     statement = """
         SELECT * FROM (
@@ -57,10 +58,19 @@ def paginate_workouts_backward(ctx: Context, last: int, before: Cursor = None):
     if before is None:
         before = Cursor.now()
 
-    # Query an extra workout that won't be shown to the user. It will be used for hasNextPage
-    workouts = ctx.db.query(Workout) \
-        .filter(Workout.time < before.time, Workout.timestamp <= before.timestamp) \
-        .order_by(desc(Workout.timestamp), desc(Workout.time)).limit(last + 1).all()
+    # Query one extra workout
+    params = {'dt': before.time, 'limit': last + 1}
+    statement = """
+        SELECT * FROM (
+            SELECT DISTINCT ON (barcode) *
+            FROM workout
+            WHERE time < :dt 
+            ORDER BY barcode, timestamp DESC
+        ) t ORDER BY "time" DESC LIMIT :limit
+    """
+
+    rows = ctx.db.execute(statement, params)
+    workouts = [Workout.from_tuple(row) for row in rows]
 
     if len(workouts) == 0:
         return None
@@ -79,7 +89,6 @@ def resolve_has_previous_page(_, __):
 
 @page_info.field('hasNextPage')
 def resolve_has_next_page(parent: WorkoutPage, _):
-    print(parent.has_next_page())
     return parent.has_next_page()
 
 
