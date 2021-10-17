@@ -1,0 +1,24 @@
+query WorkoutsBackward($last: Int!, $before: CURSOR) {
+  workouts(last: $last, before: $before) {
+    pageInfo {
+      hasPreviousPage
+      hasNextPage
+      startCursor
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        id
+        barcode
+        title
+        location
+        available
+        duration
+        time
+        timestamp
+        count
+      }
+    }
+  }
+}

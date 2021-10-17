@@ -1,0 +1,25 @@
+query WorkoutGroup($barcode: Int!) {
+  workout: workoutGroup(barcode: $barcode) {
+    first {
+      barcode
+      title
+      location
+      time
+      duration
+      count
+
+      available
+      timestamp
+    }
+    last {
+      available
+      timestamp
+    }
+
+    workouts {
+      id
+      available
+      timestamp
+    }
+  }
+}
