@@ -10,7 +10,7 @@ type Workout {
     duration: Int!
     time: ISO8601!          # When the workout session starts
     timestamp: ISO8601!     # When the workout session data was recorded
-    group: WorkoutGroup!
+    # group: WorkoutGroup!  # Removed until actually needed
     count: Int!
 }
 
