@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  db:
+    container_name: db
+    image: postgres
+    environment:
+      - POSTGRES_DB=uottawa-demand
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PORT=5432
+    ports:
+      - 5432:5432
+    networks:
+      - demand-internal
+
+  backend:
+    container_name: backend
+    build: .
+    command: python main.py --docker
+    depends_on:
+      - db
+    ports:
+      - 8000:8000
+    networks:
+      - default
+      - demand-internal
+
+networks:
+  default:
+    internal: false
+  demand-internal:
+    internal: true
+

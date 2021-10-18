@@ -7,7 +7,7 @@ import {
 
 const uri =
   process.env.NODE_ENV === "production"
-    ? `https://uodemand.holmes-dev.com/graphql`
+    ? `http://localhost:8000/graphql` //`https://uodemand.holmes-dev.com/graphql`
     : `http://localhost:8000/graphql`;
 
 const defaultOptions: DefaultOptions = {

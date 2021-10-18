@@ -24,7 +24,7 @@ app.add_middleware(
 )
 
 # GraphQL endpoint
-app.add_route('/graphql', graphql_endpoint)
+app.add_route('/graphql', graphql_endpoint, methods=['POST', 'GET'])
 
 # React application
 app.mount(
