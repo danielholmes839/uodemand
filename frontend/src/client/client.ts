@@ -5,8 +5,10 @@ import {
   DefaultOptions,
 } from "@apollo/client";
 
-const port = 8000;
-const host = `http://localhost:${port}`;
+const uri =
+  process.env.NODE_ENV === "production"
+    ? `https://uodemand.holmes-dev.com/graphql`
+    : `http://localhost:8000/graphql`;
 
 const defaultOptions: DefaultOptions = {
   mutate: {
@@ -15,7 +17,7 @@ const defaultOptions: DefaultOptions = {
 };
 
 const httpLink = createHttpLink({
-  uri: `${host}/api/graphql`,
+  uri: uri,
 });
 
 export const client = new ApolloClient({

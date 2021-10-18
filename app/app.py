@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_utils import tasks
 from app.db import Workout, db_context
@@ -6,6 +7,7 @@ from app.settings import settings
 from app.s3 import backup
 from app.resolvers import graphql_endpoint
 from app.scraping import scrape
+from app.frontend import SinglePageApplication
 
 app = FastAPI()
 
@@ -22,7 +24,14 @@ app.add_middleware(
 )
 
 # GraphQL endpoint
-app.add_route('/api/graphql', graphql_endpoint)
+app.add_route('/graphql', graphql_endpoint)
+
+# React application
+app.mount(
+    path='/',
+    app=SinglePageApplication('./frontend/build'),
+    name='SPA'
+)
 
 
 @app.on_event('startup')
