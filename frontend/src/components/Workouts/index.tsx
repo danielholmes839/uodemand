@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React from "react";
 import { useHistory, useLocation } from "react-router";
 import { Tab } from "./tab";
 import { WorkoutsForward } from "./WorkoutsFuture";
@@ -12,25 +12,29 @@ enum View {
 export const Workouts: React.FC = () => {
   const history = useHistory();
   const params = new URLSearchParams(useLocation().search);
-  const [view, setView] = useState<View>(
-    params.get("view") === "historical" ? View.HISTORICAL : View.FUTURE
-  );
 
-  useEffect(() => {
+  const update = (view: View) => {
     history.push({
       search: `?view=${view}`,
     });
-  }, [view]);
+  };
+
+  if (params.get("view") === undefined) {
+    update(View.FUTURE);
+  }
+
+  const view =
+    params.get("view") === "historical" ? View.HISTORICAL : View.FUTURE;
 
   return (
     <>
       <div className="border-b border-gray-300 mt-3">
-        <Tab active={view === View.FUTURE} onClick={() => setView(View.FUTURE)}>
+        <Tab active={view === View.FUTURE} onClick={() => update(View.FUTURE)}>
           Future Workouts
         </Tab>
         <Tab
           active={view === View.HISTORICAL}
-          onClick={() => setView(View.HISTORICAL)}
+          onClick={() => update(View.HISTORICAL)}
         >
           Historical Workouts
         </Tab>
