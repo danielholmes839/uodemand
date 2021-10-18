@@ -15,7 +15,7 @@ const App: React.FC = () => {
     <div className="container mx-auto px-3 mt-5">
       <Router>
         <h1 className="text-3xl">
-          📈 uOttawa Demand{" "}
+          📈 uOttawa Demand
           <NavLink
             className="text-base text-gray-600 bg-gray-50 hover:bg-gray-100 px-5 p-1 mt-1 rounded font-semibold float-right"
             activeClassName="hidden"
