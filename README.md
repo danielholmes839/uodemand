@@ -5,6 +5,8 @@ Web application that tracks the demand for workout sessions at uOttawa gym facil
 
 ## Data
 
+**[The dataset containing over 400,000 data points is now available on Kaggle!!!](https://www.kaggle.com/danielholmes/university-of-ottawa-workout-enrolment)**
+
 The data for this application is stored in PostgreSQL and is backed up to S3 using parquet files. Registration data is scraped from [uOttawa's website](https://geegeereg.uottawa.ca/geegeereg/Activities/ActivitiesDetails.asp?aid=316) every 20 minutes. The data is stored in PostgreSQL in a single table with the following format:
 
 | column name | column type | description |
