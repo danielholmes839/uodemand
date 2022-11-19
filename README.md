@@ -1,11 +1,14 @@
 # uOttawa Workout Session Demand Tracker
 
-Web application that tracks the demand for workout sessions at uOttawa gym facilities.
+**[The final dataset containing over 2,000,000 data points is available on Kaggle.](https://www.kaggle.com/danielholmes/university-of-ottawa-workout-enrolment)**
+
+- Web application that tracks the demand for workout sessions at uOttawa gym facilities
+- The web application has been shutdown since uOttawa no longer requires students to sign up to use the gym
+
+
 
 
 ## Data
-
-**[The dataset containing over 400,000 data points is now available on Kaggle!!!](https://www.kaggle.com/danielholmes/university-of-ottawa-workout-enrolment)**
 
 The data for this application is stored in PostgreSQL and is backed up to S3 using parquet files. Registration data is scraped from [uOttawa's website](https://geegeereg.uottawa.ca/geegeereg/Activities/ActivitiesDetails.asp?aid=316) every 20 minutes. The data is stored in PostgreSQL in a single table with the following format:
 
