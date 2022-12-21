@@ -1,12 +1,10 @@
 # uOttawa Workout Session Demand Tracker
 
+**SHUTDOWN: uOttawa no longer requires students to sign up to use the gym.**
+
 **[The final dataset containing over 2,000,000 data points is available on Kaggle.](https://www.kaggle.com/danielholmes/university-of-ottawa-workout-enrolment)**
 
 - Web application that tracks the demand for workout sessions at uOttawa gym facilities
-- The web application has been shutdown since uOttawa no longer requires students to sign up to use the gym
-
-
-
 
 ## Data
 
